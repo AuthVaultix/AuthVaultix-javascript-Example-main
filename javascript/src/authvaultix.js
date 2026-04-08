@@ -8,7 +8,7 @@ export class AuthVaultix {
     this.secret = config.secret;
     this.version = config.version;
     this.sessionid = null;
-    this.BASE_URL = "https://api.authvaultix.com/api/1.2/";
+    this.BASE_URL = "https://authvaultix.com/api/1.0/";
   }
 
   async sendRequest(payload) {
