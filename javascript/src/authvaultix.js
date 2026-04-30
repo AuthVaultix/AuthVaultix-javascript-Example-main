@@ -110,16 +110,39 @@ export class AuthVaultix {
     }
   }
 
-  printUserInfo(info) {
-    console.log("\n👤 User Info:");
-    console.log(" Username:", info.username);
-    console.log(" HWID:", info.hwid);
-    console.log(" IP:", info.ip);
-    if (info.subscriptions) {
-      console.log(" Subscriptions:");
-      for (const sub of info.subscriptions) {
-        console.log(`  - ${sub.subscription} | Expires: ${sub.expiry}`);
-      }
-    }
+printUserInfo(info) {
+  console.log("\n=== User Data ===");
+
+  console.log("Username:", info.username);
+  console.log("IP:", info.ip);
+  console.log("HWID:", info.hwid);
+
+  const created = new Date(parseInt(info.createdate) * 1000);
+  const lastLogin = new Date(parseInt(info.lastlogin) * 1000);
+
+  console.log("Created:", created.toLocaleString());
+  console.log("Last Login:", lastLogin.toLocaleString());
+
+  if (info.subscriptions && info.subscriptions.length > 0) {
+    console.log("\nSubscriptions:");
+
+    info.subscriptions.forEach((sub, index) => {
+      const expiryDate = new Date(parseInt(sub.expiry) * 1000);
+
+      let total = parseInt(sub.timeleft);
+
+      let days = Math.floor(total / 86400);
+      total %= 86400;
+      let hours = Math.floor(total / 3600);
+      total %= 3600;
+      let minutes = Math.floor(total / 60);
+
+      let timeleft = `${days}d ${hours}h ${minutes}m`;
+
+      console.log(
+        `[${index + 1}] ${sub.subscription} | Expiry: ${expiryDate.toLocaleString()} | Timeleft: ${timeleft}`
+      );
+    });
   }
+}
 }
