@@ -6,17 +6,18 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const AuthVaultixApp = new AuthVaultix({
-  name: "XD",
-  ownerid: "5d36476ca4",
-  secret: "536a5b059b76644d48b474abc49ef226536a5b059b76644d48b474abc49ef226",
-  version: "1.0"
-});
+const AuthVaultixApp = new AuthVaultix(
+  "", // App name
+  "", // Account ID
+  "", // App Secret
+  "1.0" // App version
+);
+
 
 (async () => {
   await AuthVaultixApp.Init();
 
-  console.log("\n[1] Login\n[2] Register\n[3] License Login\n[4] Exit");
+  console.log("\n[1] Login\n[2] Register\n[3] License Login\n[4] Upgrade\n[5] Forgot Password\n[6] Exit");
   rl.question("Choose option: ", async (choice) => {
     switch (choice) {
       case "1":
@@ -50,9 +51,29 @@ const AuthVaultixApp = new AuthVaultix({
         });
         break;
 
+      case "4":
+        rl.question("Username: ", (username) => {
+          rl.question("License: ", async (license) => {
+            await AuthVaultixApp.Upgrade(username.trim(), license.trim());
+            rl.close();
+          });
+        });
+        break;
+
+      case "5":
+        rl.question("Username: ", (username) => {
+          rl.question("Email: ", async (email) => {
+            await AuthVaultixApp.ForgotPassword(username.trim(), email.trim());
+            rl.close();
+          });
+        });
+        break;
+
+      case "6":
       default:
         console.log("Goodbye!");
         rl.close();
+        break;
     }
   });
 })();
