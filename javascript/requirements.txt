@@ -1,1 +1,5 @@
+node -v
+npm -v
+npm install axios
 npm install
+node main.js
