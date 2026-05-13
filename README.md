@@ -71,12 +71,12 @@ npm install
 Open `src/main.js` and replace the config values with your own from the AuthVaultix dashboard:
 
 ```js
-const AuthVaultixApp = new AuthVaultix({
-  name: "YourAppName",       // App name from dashboard
-  ownerid: "your_ownerid",   // Owner ID from dashboard
-  secret: "your_secret",     // Secret key from dashboard
-  version: "1.0"             // App version
-});
+const AuthVaultixApp = new AuthVaultix(
+  "YourAppName",       // App name from dashboard
+  "your_ownerid",      // Owner ID from dashboard
+  "your_secret",       // Secret key from dashboard
+  "1.0"                // App version
+);
 ```
 
 > ⚠️ **Never commit your real `secret` or `ownerid` to a public repository.** Use environment variables for production use.
@@ -145,21 +145,21 @@ License Login Successful!
 
 ## 🧩 SDK API Reference
 
-### `new AuthVaultix(config)`
+### Initialization
 
+#### `new AuthVaultix(appName, ownerId, secret, version)`
 Creates a new AuthVaultix client instance.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `config.name` | `string` | Your app name on AuthVaultix |
-| `config.ownerid` | `string` | Your owner ID |
-| `config.secret` | `string` | Your app secret |
-| `config.version` | `string` | Your app version string |
+| `appName` | `string` | Your app name on AuthVaultix |
+| `ownerId` | `string` | Your owner ID |
+| `secret`  | `string` | Your app secret |
+| `version` | `string` | Your app version string |
 
 ---
 
-### `await authvaultix.Init()`
-
+#### `await authvaultix.Init()`
 Initializes a session with the AuthVaultix API. **Must be called before any other method.**
 
 ```js
@@ -168,39 +168,80 @@ await AuthVaultixApp.Init();
 
 ---
 
-### `await authvaultix.Login(username, password)`
+### Authentication Methods
 
+#### `await authvaultix.Login(username, password)`
 Authenticates a user with username and password. HWID is automatically captured and sent.
 
-```js
-await AuthVaultixApp.Login("john", "mypassword");
-```
-
----
-
-### `await authvaultix.Register(username, password, license)`
-
+#### `await authvaultix.Register(username, password, licenseKey, email = "")`
 Registers a new user account using a license key.
 
-```js
-await AuthVaultixApp.Register("newuser", "mypassword", "XXXX-XXXX-XXXX-XXXX");
-```
-
----
-
-### `await authvaultix.License(licenseKey)`
-
+#### `await authvaultix.LicenseLogin(licenseKey)` / `await authvaultix.License(licenseKey)`
 Authenticates directly using a license key (no username/password required).
 
-```js
-await AuthVaultixApp.License("XXXX-XXXX-XXXX-XXXX");
-```
+#### `await authvaultix.Logout()`
+Terminates the current session and logs the user out.
 
 ---
 
-### `authvaultix.getHWID()` *(internal)*
+### User & Session Management
 
-Returns the current machine's Windows Security Identifier (SID) as the HWID. This is automatically called during login, register, and license operations.
+#### `await authvaultix.Check()`
+Validates if the current session is still active.
+
+#### `await authvaultix.Upgrade(username, licenseKey)`
+Upgrades a user's account/subscription with a new license key.
+
+#### `await authvaultix.ForgotPassword(username, email)`
+Triggers a password reset email for the given user.
+
+#### `await authvaultix.ChangeUsername(newUsername)`
+Changes the authenticated user's username.
+
+#### `authvaultix.CurrentUser`
+Property that holds the currently authenticated user's information (Username, IP, HWID, Subscriptions, etc.).
+
+---
+
+### Variables & Data
+
+#### `await authvaultix.GetVar(varName)`
+Fetches a user-specific server-side variable.
+
+#### `await authvaultix.SetVar(varName, value)`
+Sets a user-specific server-side variable for the current user.
+
+#### `await authvaultix.GetGlobalVar(varKey)`
+Fetches a global server-side variable by its ID.
+
+#### `await authvaultix.Download(fileId)`
+Downloads a secure file from the server. Returns an object containing `success`, `message`, and `fileBytes` (a Node.js Buffer).
+
+---
+
+### Security & Logging
+
+#### `await authvaultix.Log(message)`
+Sends a log message to the AuthVaultix dashboard.
+
+#### `await authvaultix.FetchOnline()`
+Retrieves a list of currently online clients.
+
+#### `await authvaultix.Ban(reason)`
+Bans the currently authenticated user with a specific reason.
+
+#### `await authvaultix.CheckBlacklist()`
+Checks if the current machine's HWID is blacklisted on the server.
+
+---
+
+### Communication
+
+#### `await authvaultix.ChatSend(message, channel)`
+Sends a message to a specific chat channel.
+
+#### `await authvaultix.ChatFetch(channel)`
+Retrieves chat history for a specific channel.
 
 ---
 
@@ -210,12 +251,12 @@ Returns the current machine's Windows Security Identifier (SID) as the HWID. Thi
   ```js
   import 'dotenv/config';
 
-  const AuthVaultixApp = new AuthVaultix({
-    name: process.env.APP_NAME,
-    ownerid: process.env.OWNER_ID,
-    secret: process.env.SECRET,
-    version: "1.0"
-  });
+  const AuthVaultixApp = new AuthVaultix(
+    process.env.APP_NAME,
+    process.env.OWNER_ID,
+    process.env.SECRET,
+    "1.0"
+  );
   ```
 - Add a `.env` file and list it in `.gitignore`:
   ```
@@ -239,9 +280,10 @@ Returns the current machine's Windows Security Identifier (SID) as the HWID. Thi
 | Platform | Supported |
 |----------|-----------|
 | Windows | Full (HWID via Windows SID) |
-| Linux/macOS | ⚠️ Partial (HWID returns `UNKNOWN_HWID`) |
+| Linux | Full (HWID via `/etc/machine-id`) |
+| macOS | Full (HWID via `IOPlatformSerialNumber`) |
 
-> HWID detection currently uses the Windows `PowerShell` method. Linux/macOS support can be added by overriding `getHWID()`.
+> HWID detection is handled automatically based on the OS platform using `os.platform()`.
 
 ---
 
